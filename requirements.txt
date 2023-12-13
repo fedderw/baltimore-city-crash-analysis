@@ -1,2 +1,8 @@
 pandas
 geopandas
+shapely
+matplotlib
+pyjanitor
+folium
+matplotlib
+mapclassify
