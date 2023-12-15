@@ -9,18 +9,24 @@ raw_data_path = Path("data/raw/crash_injuries_fatalities_2018-01-01_2023-12-11.c
 intermediate_data_path = Path("data/intermediate/crash_data.geojson")
 clean_data_path = Path("data/clean/crash_data.geojson")
 city_council_district_geojson_path = Path("data/raw/city_council_districts.geojson")
+counties_path = Path("data/raw/maryland_county_boundaries.geojson.geojson")
 
 # Load the data and rename df to crash_data
+print("Loading crash data...")
 crash_data = pd.read_csv(raw_data_path)
 
 # Clean column names
 crash_data = clean_names(crash_data)
+# print the length of the dataframe
+print("crash_data row counts:", len(crash_data))
 
 # Replace '*' and 'N/A' with NaN
 crash_data.replace(["*", "N/A"], [None, None], inplace=True)
 
 # Create a variable for non-motorist involved crashes
 crash_data["non_motorist_involved"] = crash_data["nonmotoristid"].notna()
+# Print the number of non-motorist involved crashes
+print("Non-motorist involved crashes:", crash_data["non_motorist_involved"].sum())
 
 # Create GeoDataFrame
 gdf = gpd.GeoDataFrame(
@@ -28,6 +34,16 @@ gdf = gpd.GeoDataFrame(
     geometry=gpd.points_from_xy(crash_data["longitude_generated_"], crash_data["latitude_generated_"]),
     crs="EPSG:4326",
 )
+
+# Read in counties data
+counties = gpd.read_file(counties_path).clean_names().to_crs("EPSG:4326")[["county","geometry"]]
+
+# Spatial join to get county for each crash
+gdf = gpd.sjoin(gdf, counties, how="left", op="within")
+# Drop the index_right column
+gdf.drop(columns=["index_right"], inplace=True)
+# Filter out crashes that are not in Baltimore City
+gdf = gdf[gdf["county"] == "Baltimore City"]
 
 # Read in and clean city council district data
 city_council_districts = gpd.read_file(city_council_district_geojson_path)
