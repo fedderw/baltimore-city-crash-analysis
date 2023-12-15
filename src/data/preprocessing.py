@@ -10,23 +10,22 @@ intermediate_data_path = Path("data/intermediate/crash_data.geojson")
 clean_data_path = Path("data/clean/crash_data.geojson")
 city_council_district_geojson_path = Path("data/raw/city_council_districts.geojson")
 
-# Load the data
-df = pd.read_csv(raw_data_path)
+# Load the data and rename df to crash_data
+crash_data = pd.read_csv(raw_data_path)
 
 # Clean column names
-df = clean_names(df)
+crash_data = clean_names(crash_data)
 
-# Data Cleaning
 # Replace '*' and 'N/A' with NaN
-df.replace(["*", "N/A"], [None, None], inplace=True)
+crash_data.replace(["*", "N/A"], [None, None], inplace=True)
 
 # Create a variable for non-motorist involved crashes
-df["non_motorist_involved"] = df["nonmotoristid"].notna()
+crash_data["non_motorist_involved"] = crash_data["nonmotoristid"].notna()
 
 # Create GeoDataFrame
 gdf = gpd.GeoDataFrame(
-    df,
-    geometry=gpd.points_from_xy(df["longitude_generated_"], df["latitude_generated_"]),
+    crash_data,
+    geometry=gpd.points_from_xy(crash_data["longitude_generated_"], crash_data["latitude_generated_"]),
     crs="EPSG:4326",
 )
 
@@ -51,18 +50,10 @@ gdf = gpd.sjoin(
 cols =  [
         "reportnumber",
         "circumstancescode",
-        # "driverid",
-        # "nonmotoristid",
-        # "passengerid",
-        # "vehicleid",
-        # "crashpoint",
-        # "latitude_generated_",
-        # "longitude_generated_",
         "non_motorist_involved",
         "district",
         "council_member",
         "geometry",
-        # "index_right",
     ]
 
 gdf = gdf[cols]
