@@ -74,6 +74,7 @@ cols =  [
         "district",
         "council_member",
         "geometry",
+        "county",
     ]
 
 gdf = gdf[cols]
