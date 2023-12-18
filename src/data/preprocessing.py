@@ -10,6 +10,8 @@ raw_data_path = Path("data/raw/crash_injuries_fatalities_2018-01-01_2023-12-11.c
 intermediate_data_path = Path("data/intermediate/crash_data.geojson")
 clean_data_path = Path("data/clean/crash_data.geojson")
 city_council_district_geojson_path = Path("data/external/city_council_districts.geojson")
+# clean city council district data path
+city_council_district_clean_path = Path("data/clean/city_council_districts.geojson")
 counties_path = Path("data/external/maryland_county_boundaries.geojson.geojson")
 
 # Load the data and rename df to crash_data
@@ -57,6 +59,9 @@ city_council_districts = clean_names(city_council_districts)
 city_council_districts.rename(
     columns={"area_name": "district", "cntct_nme": "council_member"}, inplace=True
 )
+# Write to GeoJSON
+city_council_districts.to_file(city_council_district_clean_path, driver="GeoJSON")
+print(f"Cleaned city council district data and saved to {city_council_district_clean_path}")
 
 # Perform spatial join to get city council district for each crash
 gdf = gpd.sjoin(
@@ -80,4 +85,4 @@ cols =  [
 gdf = gdf[cols]
 # Write to GeoJSON
 gdf.to_file(clean_data_path, driver="GeoJSON")
-print("Done!")
+print(f"Cleaned crash data and saved to {clean_data_path}")
