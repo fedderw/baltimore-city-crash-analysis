@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import geopandas as gpd
 from shapely.geometry import Point
 from pathlib import Path
@@ -8,8 +9,8 @@ from janitor import clean_names
 raw_data_path = Path("data/raw/crash_injuries_fatalities_2018-01-01_2023-12-11.csv")
 intermediate_data_path = Path("data/intermediate/crash_data.geojson")
 clean_data_path = Path("data/clean/crash_data.geojson")
-city_council_district_geojson_path = Path("data/raw/city_council_districts.geojson")
-counties_path = Path("data/raw/maryland_county_boundaries.geojson.geojson")
+city_council_district_geojson_path = Path("data/external/city_council_districts.geojson")
+counties_path = Path("data/external/maryland_county_boundaries.geojson.geojson")
 
 # Load the data and rename df to crash_data
 print("Loading crash data...")
@@ -21,7 +22,8 @@ crash_data = clean_names(crash_data)
 print("crash_data row counts:", len(crash_data))
 
 # Replace '*' and 'N/A' with NaN
-crash_data.replace(["*", "N/A"], [None, None], inplace=True)
+crash_data.replace("*", np.nan, inplace=True)
+crash_data.replace("N/A", np.nan, inplace=True)
 
 # Create a variable for non-motorist involved crashes
 crash_data["non_motorist_involved"] = crash_data["nonmotoristid"].notna()
@@ -37,6 +39,8 @@ gdf = gpd.GeoDataFrame(
 
 # Read in counties data
 counties = gpd.read_file(counties_path).clean_names().to_crs("EPSG:4326")[["county","geometry"]]
+# Drop all counties except Baltimore City
+counties = counties[counties["county"] == "Baltimore City"]
 
 # Spatial join to get county for each crash
 gdf = gpd.sjoin(gdf, counties, how="left", op="within")
@@ -75,8 +79,4 @@ cols =  [
 gdf = gdf[cols]
 # Write to GeoJSON
 gdf.to_file(clean_data_path, driver="GeoJSON")
-# Write city_council_districts to GeoJSON
-city_council_districts.to_file(
-    "data/clean/city_council_districts.geojson", driver="GeoJSON"
-)
 print("Done!")
