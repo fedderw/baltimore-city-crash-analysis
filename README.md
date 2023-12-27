@@ -12,3 +12,9 @@ Unfortunately, there are not enough data fields available for download to proper
 ![image](https://github.com/fedderw/baltimore-city-crash-analysis/assets/16396180/28774340-9c43-440a-b87a-1a3e441127d3)
 
 Since we are just focused on Baltimore City to generate our heatmap, we can use a spatial join to filter out the data points that fall outside of the city line.
+
+**NOTE**: To determine whether a non-motorist was involved in the crash, we have to use the presence of a non-motorist ID as a proxy, since that information is not offered in the dataset directly. 
+
+![image](https://github.com/fedderw/baltimore-city-crash-analysis/assets/16396180/42cd21ee-26c8-4ae3-975e-bfda5d9f1568)
+
+If we hear back from the team responsible for the data download tool, this method may change. 
